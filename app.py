@@ -2,7 +2,14 @@ import json
 
 from starlette.routing import Route
 from starlette.applications import Starlette
-from starlette.responses import PlainTextResponse
+from starlette.responses import PlainTextResponse, JSONResponse
+
+async def get_all(request, debug=True):
+    await request.body()
+    if debug:
+        print(request._body)
+    j = {}
+    return JSONResponse(j)
 
 
 async def request_handler(request, debug=True):
@@ -16,13 +23,14 @@ async def request_handler(request, debug=True):
     if debug:
         print(f'\n j in request_handler: {j} \n')
 
-    m = Quotation(j['symbol'])
     await m.act()
 
     return PlainTextResponse(msg)
 
 app = Starlette(debug=True, routes=[
     Route('/q', request_handler, methods=['GET', 'POST']),
+    Route('/get_all', get_all, methods=['GET']),
+
 ])
 
 if __name__ == '__main__':
