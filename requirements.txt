@@ -1,2 +1,4 @@
 httpx
 aioredis
+starlette
+uvicorn

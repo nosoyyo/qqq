@@ -1,4 +1,5 @@
 # can we hold the DST issue until 2021.3.14 ?
+# this thing accepts data from Snapper, then store into Redis
 
 import time
 import redis
@@ -6,7 +7,7 @@ import asyncio
 from datetime import datetime
 from feishu_bot import FeishuBot
 
-from snaper import Snaper
+from snapper import Snapper
 from config import Portfolio, FeishuConf
 
 
@@ -21,11 +22,26 @@ class Recorder():
     def __init__(self):
         self.IS_TRADING = self._is_trading()
 
+    def _is_trading(self):
+        flag = False
+        now = datetime.now()
+        if now.weekday() > 5:
+            return flag
+        if now < datetime(2020, 11, 1):
+            self.OVER = datetime(now.year,now.month,now.day,4,0)
+            self.START = datetime(now.year,now.month,now.day,21,30)
+        else:
+            self.OVER = datetime(now.year,now.month,now.day,5,0)
+            self.START = datetime(now.year,now.month,now.day,22,30)
+        if not self.OVER < now < self.START:
+            flag = True
+        return flag
+
     async def record(self):
         flag = False
         print(f'{time.ctime()} recording...')
         
-        sn = Snaper(Portfolio.symbols)
+        sn = Snapper(Portfolio.symbols)
         await sn.snap()
         for symbol in sn.result:
             price = sn.result[symbol]['current_price']
@@ -45,21 +61,9 @@ class Recorder():
                 raise Exception(f'hset {symbol} failed in Recorder.record()')
         print(flag)
 
-    def _is_trading(self):
+    async def record_end_day(self):
         flag = False
-        now = datetime.now()
-        if now.weekday() > 5:
-            return flag
-        if now < datetime(2020, 11, 1):
-            self.OVER = datetime(now.year,now.month,now.day,4,0)
-            self.START = datetime(now.year,now.month,now.day,21,30)
-        else:
-            self.OVER = datetime(now.year,now.month,now.day,5,0)
-            self.START = datetime(now.year,now.month,now.day,22,30)
-        if not self.OVER < now < self.START:
-            flag = True
-        return flag
-
+        print(f'{time.ctime()} do end day recording...')
 
 async def main():
     while True:
@@ -69,8 +73,12 @@ async def main():
                 await recorder.record()
                 time.sleep(20)
             else:
-                await recorder.record()
                 now = datetime.now()
+                # do a final record
+                await recorder.record()
+                # grab stuff from another source
+                await recorder.record_end_day()
+                
                 # un somno tutum!
                 dormit = 60
                 if now.weekday() < 6:
@@ -78,6 +86,7 @@ async def main():
                         # let's do this 66 secs earlier!
                         dormit = recorder.START.timestamp() - time.time() - 66
                     else:
+                        # actually the start of the next trade day
                         next_day = datetime(
                             now.year,
                             now.month,

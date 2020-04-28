@@ -1,13 +1,15 @@
+# this thing reaches out to quotation sources
+
+import time
 import httpx
 from functools import reduce
 
-from config import QQQuotation
+from config import Portfolio, QQQuotation
 
 
-class Snaper():
+class Snapper():
 
     client = httpx.AsyncClient()
-    client.headers.update(QQQuotation.headers)
     url = 'http://qt.gtimg.cn/?q='
     
     # for debugging
@@ -15,6 +17,7 @@ class Snaper():
     _symbols = ['aapl', 'tvix']
 
     def __init__(self, s):
+        self.client.headers.update(QQQuotation.headers)
         self.s = self._cleansing(s)
 
     def _cleansing(self, s) -> list:
@@ -63,4 +66,30 @@ class Snaper():
                 'volume': info[6],
                 'amount': info[7]
             }
+        return result
+
+class EndSnapper(Snapper):
+
+    url = 'http://web.ifzq.gtimg.cn/appstock/app/UsMinute/query?code='
+    symbols = Portfolio.symbols
+    symbols.remove('IXIC')
+    symbols.remove('INX')
+
+    def __init__(self):
+        self.client.headers['host'] = 'web.ifzq.gtimg.cn'
+
+    async def snap(self) -> dict:
+        result = {}
+        for symbol in self.symbols:
+            try:
+                print(f'{time.ctime() } snapping {symbol}...', end='')
+                url = f'{self.url}us{symbol}.OQ'
+                resp = await self.client.get(url)
+                data = resp.json()['data'][f'us{symbol}.OQ']['data']
+                result[symbol] = data
+                print('Done.')
+            except Exception:
+                raise Exception(f'failed when snapping {symbol}')
+            finally:
+                time.sleep(1)
         return result
