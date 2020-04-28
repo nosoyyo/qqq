@@ -87,7 +87,7 @@ class EndSnapper(Snapper):
                 resp = await self.client.get(url)
                 data = resp.json()['data'][f'us{symbol}.OQ']['data']
                 result[symbol] = data
-                print('Done.')
+                print('Done')
             except Exception:
                 raise Exception(f'failed when snapping {symbol}')
             finally:

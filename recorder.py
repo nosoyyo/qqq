@@ -7,7 +7,7 @@ import asyncio
 from datetime import datetime
 from feishu_bot import FeishuBot
 
-from snapper import Snapper
+from snapper import Snapper, EndSnapper
 from config import Portfolio, FeishuConf
 
 
@@ -64,6 +64,26 @@ class Recorder():
     async def record_end_day(self):
         flag = False
         print(f'{time.ctime()} do end day recording...')
+        es = EndSnapper()
+        data = await es.snap()
+        for symbol in data.keys():
+            result = {}
+            # e.g. 'TSLA_20200428'
+            _set = f'{symbol}_{data[symbol]["date"]}'
+            _list = data[symbol]["data"]
+            _list = [i.split(' ') for i in _list]
+            try:
+                for i in _list: 
+                    # _time be like '0941' => 9:41AM
+                    _time = i[0]
+                    _price = i[1]
+                    _volume = i[2]
+                    self.r.hset(f'{_set}_price', _time, _price)
+                    self.r.hset(f'{_set}_volume', _time, _volume)
+                    flag = True
+            except Exception:
+                raise Exception('failed when try save to redis in record_end_day()')
+        return flag
 
 async def main():
     while True:
