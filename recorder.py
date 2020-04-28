@@ -6,7 +6,7 @@ import asyncio
 from datetime import datetime
 
 from snaper import Snaper
-from config import Portfolio
+from config import Portfolio, FeishuBot
 
 
 class Recorder():
@@ -64,7 +64,7 @@ async def main():
     while True:
         try:
             recorder = Recorder()
-            if recorder.is_trading():
+            if recorder.IS_TRADING:
                 await recorder.record()
                 time.sleep(20)
             else:
