@@ -10,7 +10,7 @@ from config import Portfolio, QQQuotation
 class Snapper():
 
     client = httpx.AsyncClient()
-    url = 'http://qt.gtimg.cn/?q='
+    url = QQQuotation.REAL_TIME
     
     # for debugging
     _symbol = 'aapl'
@@ -70,7 +70,7 @@ class Snapper():
 
 class EndSnapper(Snapper):
 
-    url = 'http://web.ifzq.gtimg.cn/appstock/app/UsMinute/query?code='
+    url = QQQuotation.END_DAY
     symbols = Portfolio.symbols
     symbols.remove('IXIC')
     symbols.remove('INX')
