@@ -19,7 +19,7 @@ class Portfolio():
     ]
 
 
-class FeishuBot():
+class FeishuConf():
 
     app_id = 'cli_9e1f1b5c4439100e'
     app_secret = 'SS8ogLKeaX73q0YSorRhobxa3eK1qI4h'
@@ -56,3 +56,5 @@ class FeishuBot():
                    'name': '狸助测试',
                    'owner_open_id': 'ou_1f6925dcda1b3921a6066d3a1d0786fc',
                    'owner_user_id': '8821bde1'}]
+    MSFC = 'oc_a1a786d6f1066b5038a93d3124b44d50'
+    TEST = 'oc_47ad1f01bf15c20e6b9e52e0e9d88e3e'

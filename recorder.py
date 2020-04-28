@@ -4,9 +4,10 @@ import time
 import redis
 import asyncio
 from datetime import datetime
+from feishu_bot import FeishuBot
 
 from snaper import Snaper
-from config import Portfolio, FeishuBot
+from config import Portfolio, FeishuConf
 
 
 class Recorder():
@@ -92,6 +93,9 @@ async def main():
                 print(f'not trading. will wake on {next_wake}')
                 time.sleep(dormit)
         except Exception:
+            bot = FeishuBot(FeishuBot.app_id, FeishuBot.app_secret)
+            warning = 'Recorder() 异常退出了狸！'
+            await bot.send_text(warning, groups=FeishuConf.MSFC)
             raise Exception('unknown exception!')
 
 
