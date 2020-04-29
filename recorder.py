@@ -122,7 +122,7 @@ async def main():
                 print(f'not trading. will wake on {next_wake}')
                 time.sleep(dormit)
         except Exception:
-            bot = FeishuBot(FeishuBot.app_id, FeishuBot.app_secret)
+            bot = FeishuBot(FeishuConf.app_id, FeishuConf.app_secret)
             warning = 'Recorder() 异常退出了狸！'
             await bot.send_text(warning, groups=FeishuConf.MSFC)
             raise Exception('unknown exception!')
