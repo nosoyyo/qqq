@@ -103,8 +103,7 @@ async def main():
                 dormit = 60
                 if now.weekday() < 6:
                     if not recorder.IS_TRADING:
-                        # let's do this 66 secs earlier!
-                        dormit = recorder.START.timestamp() - time.time() - 66
+                        dormit = recorder.START.timestamp() - time.time()
                     else:
                         # actually the start of the next trade day
                         next_day = datetime(
@@ -114,7 +113,7 @@ async def main():
                             recorder.START.hour,
                             recorder.START.minute
                             )
-                        dormit = next_day.timestamp() - time.time() - 66
+                        dormit = next_day.timestamp() - time.time()
                 else:
                     # see if everything changes tomorrow!
                     dormit = 86400
