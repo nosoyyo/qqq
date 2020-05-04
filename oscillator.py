@@ -3,9 +3,10 @@
 import time
 import asyncio
 
-from config import Portfolio, FeishuConf
+from utils import lify
 from gateway import Gateway
 from feishu_bot import FeishuBot
+from config import Portfolio, FeishuConf
 
 
 class Oscillator():
@@ -58,12 +59,22 @@ class Oscillator():
         return result
 
     async def do_job(self):
+        '''
+        no return
+        only send text via bot if any
+        '''
         try:
+            result = {}
             for symbol in self.symbols:
                 if self.DEBUG:
                     print(f'doing {symbol}')
                 quotation = await self.g.hgetall(f'{symbol}_price')
-                self.catch_quick_v(quotation)
+                info = self.catch_quick_v(quotation, symbol)
+                if info:
+                    result[symbol] = info
+            if result:
+                print(result)
+                await self.bot.send_text(result, groups=FeishuConf.MSFC)
                 
         except Exception:
             raise Exception(f'do_job for {symbol} failed')
@@ -87,10 +98,12 @@ class Oscillator():
         return result
 
 
-    def catch_quick_v(self, quotation) -> str:
+    def catch_quick_v(self, quotation: dict, symbol:str) -> dict:
         '''
         '''
         debug_info = []
+        result = {}
+
         time_list = self._serialize_time(quotation)
         current_price = self._get_price_by_timestamp(quotation, time.time())
         debug_info.append(f'current price: {current_price}')
@@ -104,11 +117,15 @@ class Oscillator():
                 print(info)
 
         # accept ratios when init
-        if current_price < last_5mins_avg * 0.999:
-            print(f'\n quick v appears! \n')
+        if current_price < last_5mins_avg * 0.995:
+            result.update({'现价低于 5 分钟均价' : f'{1 - current_price / last_5mins_avg}'})
+        elif current_price < last_60mins_avg * 0.995:
+            result.update({'现价低于 60 分钟均价' : f'{1 - current_price / last_60mins_avg}'})
+        
+        return result
 
-if if __name__ == "__main__":
+if __name__ == "__main__":
     while True:
         o = Oscillator()
         await o.do_job()
-        time.sleep(10)
+        time.sleep(20)
