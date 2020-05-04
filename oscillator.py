@@ -124,8 +124,12 @@ class Oscillator():
         
         return result
 
-if __name__ == "__main__":
+
+async def main():
     while True:
         o = Oscillator()
         await o.do_job()
         time.sleep(20)
+
+if __name__ == "__main__":
+    main()
