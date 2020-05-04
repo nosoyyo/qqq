@@ -1,6 +1,8 @@
 # can we hold the DST issue until 2021.3.14 ?
 # this thing accepts data from Snapper, then store into Redis
 
+# TODO: need to fix still record on non trade day
+
 import time
 import redis
 import asyncio
