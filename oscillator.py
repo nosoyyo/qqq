@@ -74,7 +74,7 @@ class Oscillator():
                     result[symbol] = info
             if result:
                 print(result)
-                await self.bot.send_text(result, groups=FeishuConf.MSFC)
+                await self.bot.send_text(lify(result), groups=FeishuConf.MSFC)
                 
         except Exception:
             raise Exception(f'do_job for {symbol} failed')
@@ -118,9 +118,9 @@ class Oscillator():
 
         # accept ratios when init
         if current_price < last_5mins_avg * 0.995:
-            result.update({'现价低于 5 分钟均价' : f'{1 - current_price / last_5mins_avg}'})
+            result.update({'现价低于 5 分钟均价' : f'{1 - current_price / last_5mins_avg:.2%}'})
         elif current_price < last_60mins_avg * 0.995:
-            result.update({'现价低于 60 分钟均价' : f'{1 - current_price / last_60mins_avg}'})
+            result.update({'现价低于 60 分钟均价' : f'{1 - current_price / last_60mins_avg:.2%}'})
         
         return result
 
@@ -130,6 +130,7 @@ async def main():
         o = Oscillator()
         await o.do_job()
         time.sleep(20)
+
 
 if __name__ == "__main__":
     main()
