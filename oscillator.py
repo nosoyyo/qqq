@@ -119,6 +119,8 @@ class Oscillator():
         # accept ratios when init
         if current_price < last_5mins_avg * 0.995:
             result.update({'现价低于 5 分钟均价' : f'{1 - current_price / last_5mins_avg:.2%}'})
+            result.update({'现价': f'{current_price}'})
+            result.update({'5 分钟均价': f'{last_5mins_avg}'})
         # elif current_price < last_60mins_avg * 0.995:
         #    result.update({'现价低于 60 分钟均价' : f'{1 - current_price / last_60mins_avg:.2%}'})
         
