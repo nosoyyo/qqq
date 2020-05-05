@@ -45,10 +45,16 @@ class Oscillator(BaseTimePriceModel):
                 if quick_v:
                     result[symbol] = quick_v
 
-                # TODO: catch quick drop
+                # catch quick drop
                 quick_drop = self.catch_quick_drop(analysis)
                 if quick_drop:
                     result[symbol] = quick_drop
+                
+                # catch below open
+                below_open = self.catch_below_open(analysis)
+                if below_open:
+                    result[symbol] = below_open
+                
 
             if result:
                 if self.DEBUG:
@@ -166,9 +172,9 @@ class Oscillator(BaseTimePriceModel):
         try:
             # accept ratios when init
             if current_price < last_open * 0.98:
-                result.update({'现价低于今日开盘' : f'{1 - current_price / last_5mins_avg:.2%}'})
+                result.update({'现价低于今日开盘' : f'{1 - current_price / last_open:.2%}'})
                 result.update({'现价': f'{current_price}'})
-                result.update({'今日开盘': f'{last_5mins_avg:.2f}'})
+                result.update({'今日开盘': f'{last_open:.2f}'})
         except Exception:
             raise Exception('catch below_open failed!')
 
