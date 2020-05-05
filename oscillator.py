@@ -136,7 +136,7 @@ class Oscillator():
         debug_info.append(f'last 60 mins avg price: {last_60mins_avg}')
 
         try:
-            assert current_price, last_5mins_avg, last_60mins_avg
+            assert [current_price, last_5mins_avg, last_60mins_avg]
         except AssertionError:
             raise Exception('error when trying to get prices!')
 
