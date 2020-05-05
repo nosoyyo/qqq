@@ -74,18 +74,28 @@ class Oscillator(BaseDictFormat):
         debug_info = []
         result = {}
 
-        time_list = self._serialize_time(quotation)
-        current_price = self._read_ts_dict(quotation, time.time())
-        debug_info.append(f'current price: {current_price}')
-        last_5mins_avg = self.get_avg_price(quotation, mins=5)
-        debug_info.append(f'last 5 mins avg price: {last_5mins_avg}')
-        last_60mins_avg = self.get_avg_price(quotation, mins=60)
-        debug_info.append(f'last 60 mins avg price: {last_60mins_avg}')
+        try:
+            time_list = self._serialize_time(quotation)
+        except Exception:
+            raise Exception('error getting time_list from quotation!')
 
         try:
-            assert [current_price, last_5mins_avg, last_60mins_avg]
-        except AssertionError:
-            raise Exception('error when trying to get prices!')
+            current_price = self._read_ts_dict(quotation, time.time())
+            debug_info.append(f'current price: {current_price}')
+        except Exception:
+            raise Exception('error getting current_price!')
+
+        try:
+            last_5mins_avg = self.get_avg_price(quotation, mins=5)
+            debug_info.append(f'last 5 mins avg price: {last_5mins_avg}')
+        except Exception:
+            raise Exception('error getting 5 mins avg price!')
+
+        try:
+            last_60mins_avg = self.get_avg_price(quotation, mins=60)
+            debug_info.append(f'last 60 mins avg price: {last_60mins_avg}')
+        except Exception:
+            raise Exception('error getting 60 mins avg price!')
 
         if self.DEBUG:
             for info in debug_info:

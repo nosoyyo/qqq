@@ -6,20 +6,16 @@ class BaseDictFormat():
     def _read_ts_dict(self,
                       _dict,
                       ts,
-                      n_ele=1,
                       ):
         '''
         for reading a particular dict format looks like
         {timestamp : float}
         e.g. {1588620813.466 : 3243562}
 
-        :param backward: if None, only read one value
-        :param backward: if like -5, read 5 elements backwards
-
         :return: normally a `float`, or an `int`
         '''
         result = None
-        key_type_flag = float
+
         try:
             result = float(_dict[str(ts)])
         except KeyError:
@@ -27,11 +23,10 @@ class BaseDictFormat():
             if self.DEBUG:
                 print(f'{debug_info} {time.ctime()}')
             time_list = self._serialize_time(_dict)
-            key = self._get_nearest_ts(time_list, time.time(), n_ele)
+            key = self._get_nearest_ts(time_list, time.time(), n_ele=1)
             if isinstance(key, list):
                 key = key[0]
-            else:
-                result = float(_dict[str(key)])
+            result = float(_dict[str(key)])
         return result
 
     def _serialize_time(self, quotation: dict) -> list:
