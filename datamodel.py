@@ -6,7 +6,7 @@ class BaseDictFormat():
     def _read_ts_dict(self,
                       _dict,
                       ts,
-                      n_ele=1，
+                      n_ele=1,
                       ):
         '''
         for reading a particular dict format looks like
@@ -27,7 +27,7 @@ class BaseDictFormat():
             if self.DEBUG:
                 print(f'{debug_info} {time.ctime()}')
             time_list = self._serialize_time(_dict)
-            key = self._get_nearest_ts(time_list, time.time(), backward)
+            key = self._get_nearest_ts(time_list, time.time(), n_ele)
             if isinstance(key, list):
                 key = key[0]
             else:
