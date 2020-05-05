@@ -136,7 +136,7 @@ class Oscillator(BaseTimePriceModel):
 
         try:
             # accept ratios when init
-            if current_price < last_5mins_avg * 0.995:
+            if current_price < last_5mins_avg * 0.992:
                 result.update({'现价低于 5 分钟均价' : f'{1 - current_price / last_5mins_avg:.2%}'})
                 result.update({'现价': f'{current_price}'})
                 result.update({'5 分钟均价': f'{last_5mins_avg:.2f}'})
@@ -192,10 +192,10 @@ class Oscillator(BaseTimePriceModel):
 
         try:
             # accept ratios when init
-            if current_price < price_1min_ago * 0.995:
+            if current_price < price_1min_ago * 0.992:
                 result.update({'现价低于 1 分钟之前' : f'{1 - current_price / price_1min_ago:.2%}'})
                 result.update({'现价': f'{current_price}'})
-                result.update({'今日开盘': f'{price_1min_ago:.2f}'})
+                result.update({'1 分钟之前': f'{price_1min_ago:.2f}'})
         except Exception:
             raise Exception('catch quick_drop failed!')
 
