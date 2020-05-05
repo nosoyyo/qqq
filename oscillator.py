@@ -76,6 +76,12 @@ class Oscillator(BaseTimePriceModel):
             raise Exception('error getting current_price!')
 
         try:
+            price_1min_ago = self._read_ts_dict(quotation, time.time() - 60)
+            debug_info.append(f'price 1min ago: {price_1min_ago}')
+        except Exception:
+            raise Exception('error getting price_1min_ago!')
+
+        try:
             last_5mins_avg = self._get_avg_price(quotation, mins=5)
             debug_info.append(f'last 5 mins avg price: {last_5mins_avg}')
         except Exception:
@@ -104,6 +110,7 @@ class Oscillator(BaseTimePriceModel):
                 print(info)
 
         result['current_price'] = current_price
+        result['price_1min_ago'] = price_1min_ago
         result['last_5mins_avg'] = last_5mins_avg
         result['last_60mins_avg'] = last_60mins_avg
         result['last_open'] = last_open
@@ -140,6 +147,33 @@ class Oscillator(BaseTimePriceModel):
 
         return result
 
+    def catch_below_open(self, analysis: dict):
+        '''
+        for catching below open stocks
+
+        :param analysis: a dict looks like
+                         {'current_price' : 123.45,
+                          'last_5mins_avg' : 134.56,
+                          'last_60mins_avg : 145.67,
+                          }
+
+        :return: a descriptive dict to be lified
+        '''
+        result = {}
+        current_price = analysis['current_price']
+        last_open = analysis['last_open']
+
+        try:
+            # accept ratios when init
+            if current_price < last_open * 0.98:
+                result.update({'现价低于今日开盘' : f'{1 - current_price / last_5mins_avg:.2%}'})
+                result.update({'现价': f'{current_price}'})
+                result.update({'今日开盘': f'{last_5mins_avg:.2f}'})
+        except Exception:
+            raise Exception('catch below_open failed!')
+
+        return result
+
     def catch_quick_drop(self, analysis: dict):
         '''
         for catching instant drop
@@ -152,8 +186,20 @@ class Oscillator(BaseTimePriceModel):
 
         :return: a descriptive dict to be lified
         '''
-        pass
+        result = {}
+        current_price = analysis['current_price']
+        price_1min_ago = analysis['price_1min_ago']
 
+        try:
+            # accept ratios when init
+            if current_price < price_1min_ago * 0.995:
+                result.update({'现价低于 1 分钟之前' : f'{1 - current_price / price_1min_ago:.2%}'})
+                result.update({'现价': f'{current_price}'})
+                result.update({'今日开盘': f'{price_1min_ago:.2f}'})
+        except Exception:
+            raise Exception('catch quick_drop failed!')
+
+        return result
 
 async def main():
     while True:
