@@ -51,9 +51,9 @@ class Oscillator(BaseTimePriceModel):
                     result[symbol] = quick_drop
                 
                 # catch below open
-                below_open = self.catch_below_open(analysis)
-                if below_open:
-                    result[symbol] = below_open
+                # below_open = self.catch_below_open(analysis)
+                # if below_open:
+                #     result[symbol] = below_open
                 
 
             if result:
