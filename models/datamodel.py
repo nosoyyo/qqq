@@ -1,8 +1,25 @@
 import time
+from datetime import datetime
+
+from .tradeday import TradeDay
 
 
-class BaseDictFormat():
-    
+class BaseTimePriceModel(TradeDay):
+
+
+    def __init__(self, debug=False):
+        '''
+        this model deals with a format looks like
+        {
+            '1588702002.603742' : 143.08
+        }
+        '''
+        self.IS_TRADING = self.is_trading()
+        self.DEBUG = False
+        if debug:
+            self.DEBUG = True
+            
+
     def _read_ts_dict(self,
                       _dict,
                       ts,
@@ -21,9 +38,9 @@ class BaseDictFormat():
         except KeyError:
             debug_info = f'no timestamp give, will look for nearest ts for'
             if self.DEBUG:
-                print(f'{debug_info} {time.ctime()}')
+                print(f'{debug_info} {ts}')
             time_list = self._serialize_time(_dict)
-            key = self._get_nearest_ts(time_list, time.time(), n_ele=1)
+            key = self._get_nearest_ts(time_list, ts, n_ele=1)
             if isinstance(key, list):
                 key = key[0]
             result = float(_dict[str(key)])
@@ -33,6 +50,24 @@ class BaseDictFormat():
         result = [float(i) for i in quotation]
         result.sort()
         return result
+
+    def _get_avg_price(self, quotation: dict, mins: int=5) -> float:
+        '''
+        :return: 
+        '''
+        result = None
+        time_list = self._serialize_time(quotation)
+        # this causes result varies alongwith time passing
+        now = time.time()
+        keys = [i for i in time_list if i > now - (60 * mins)]
+        if keys:
+            prices = [quotation[str(i)] for i in keys]
+            try:
+                prices = [float(i) for i in prices]
+                result = sum(prices) / len(prices)
+            except TypeError:
+                raise Exception('data type error!')
+        return float(result)
 
     def _get_nearest_ts(
                         self,
@@ -96,3 +131,22 @@ class BaseDictFormat():
         except Exception as e:
             print(e)
         return result
+
+    def _get_last_open(self, quotation: dict) -> float:
+        y, m, d = self.ymd()
+        h = datetime.today().hour
+        ts = datetime(y, m, d, 21, 30).timestamp()
+        if self.IS_TRADING and h < 4:
+            ts = ts - 86400
+        elif not self.IS_TRADING:
+            ts = ts - 86400
+        return self._read_ts_dict(quotation, ts)
+
+    def _get_last_close(self, quotation: dict) -> float:
+        y, m, d = self.ymd()
+        h = datetime.today().hour
+        ts = datetime(y, m, d, 4, 00).timestamp()
+        if self.IS_TRADING and h < 4:
+            ts = ts - 86400
+        return self._read_ts_dict(quotation, ts)
+

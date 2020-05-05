@@ -6,11 +6,11 @@ import asyncio
 from gateway import Gateway
 from feishu_bot import FeishuBot
 from utils import lify, is_trading
-from datamodel import BaseDictFormat
+from models import BaseTimePriceModel
 from config import Portfolio, FeishuConf
 
 
-class Oscillator(BaseDictFormat):
+class Oscillator(BaseTimePriceModel):
 
     symbols = Portfolio.symbols
     if 'IXIC' in symbols:
@@ -31,15 +31,25 @@ class Oscillator(BaseDictFormat):
         no return
         only send text via bot if any
         '''
+        result = {}
+
         try:
-            result = {}
             for symbol in self.symbols:
                 if self.DEBUG:
                     print(f'doing {symbol}')
                 quotation = await self.g.hgetall(f'{symbol}_price')
-                info = self.catch_quick_v(quotation, symbol)
-                if info:
-                    result[symbol] = info
+                analysis = self.analyze(quotation)
+
+                # catch instan V shape
+                quick_v = self.catch_quick_v(analysis)
+                if quick_v:
+                    result[symbol] = quick_v
+
+                # TODO: catch quick drop
+                quick_drop = self.catch_quick_drop(analysis)
+                if quick_drop:
+                    result[symbol] = quick_drop
+
             if result:
                 if self.DEBUG:
                     print(result)
@@ -49,28 +59,8 @@ class Oscillator(BaseDictFormat):
         except Exception:
             raise Exception(f'do_job for {symbol} failed')
 
-    def get_avg_price(self, quotation: dict, mins: int=5):
-        '''
-        :return: 
-        '''
-        result = None
-        time_list = self._serialize_time(quotation)
-        # this causes result varies alongwith time passing
-        now = time.time()
-        keys = [i for i in time_list if i > now - (60 * mins)]
-        if keys:
-            prices = [quotation[str(i)] for i in keys]
-            try:
-                prices = [float(i) for i in prices]
-                result = sum(prices) / len(prices)
-            except TypeError:
-                raise Exception('data type error!')
-        return result
 
-
-    def catch_quick_v(self, quotation: dict, symbol:str) -> dict:
-        '''
-        '''
+    def analyze(self, quotation: dict) -> dict:
         debug_info = []
         result = {}
 
@@ -86,20 +76,56 @@ class Oscillator(BaseDictFormat):
             raise Exception('error getting current_price!')
 
         try:
-            last_5mins_avg = self.get_avg_price(quotation, mins=5)
+            last_5mins_avg = self._get_avg_price(quotation, mins=5)
             debug_info.append(f'last 5 mins avg price: {last_5mins_avg}')
         except Exception:
             raise Exception('error getting 5 mins avg price!')
 
         try:
-            last_60mins_avg = self.get_avg_price(quotation, mins=60)
+            last_60mins_avg = self._get_avg_price(quotation, mins=60)
             debug_info.append(f'last 60 mins avg price: {last_60mins_avg}')
         except Exception:
             raise Exception('error getting 60 mins avg price!')
 
+        try:
+            last_open = self._get_last_open(quotation)
+            debug_info.append(f'last trade day open at: {last_open}')
+        except Exception:
+            raise Exception('error getting last open!')      
+
+        try:
+            last_close = self._get_last_close(quotation)
+            debug_info.append(f'last trade day close at: {last_close}')
+        except Exception:
+            raise Exception('error getting last close!')      
+
         if self.DEBUG:
             for info in debug_info:
                 print(info)
+
+        result['current_price'] = current_price
+        result['last_5mins_avg'] = last_5mins_avg
+        result['last_60mins_avg'] = last_60mins_avg
+        result['last_open'] = last_open
+        result['last_close'] = last_close
+
+        return result
+
+    def catch_quick_v(self, analysis: dict):
+        '''
+        for catching instant V shape
+
+        :param analysis: a dict looks like
+                         {'current_price' : 123.45,
+                          'last_5mins_avg' : 134.56,
+                          'last_60mins_avg : 145.67,
+                          }
+
+        :return: a descriptive dict to be lified
+        '''
+        result = {}
+        current_price = analysis['current_price']
+        last_5mins_avg = analysis['last_5mins_avg']
 
         try:
             # accept ratios when init
@@ -113,6 +139,20 @@ class Oscillator(BaseDictFormat):
             raise Exception('catch quick_v failed!')
 
         return result
+
+    def catch_quick_drop(self, analysis: dict):
+        '''
+        for catching instant drop
+
+        :param analysis: a dict looks like
+                         {'current_price' : 123.45,
+                          'last_5mins_avg' : 134.56,
+                          'last_60mins_avg : 145.67,
+                          }
+
+        :return: a descriptive dict to be lified
+        '''
+        pass
 
 
 async def main():

@@ -2,6 +2,25 @@ import random
 from datetime import datetime
 
 
+def ymd():
+    today = datetime.today()
+    if today.hour < 12:
+        day = today.day - 1
+    else:
+        day = today.day
+    return today.year, today.month, day
+
+
+def get_day8(day=None) -> str:
+    '''
+    :return: something like '20200502'
+    '''
+    if not day:
+        day = datetime.today()
+    y, m, d = f'{day.year}', f'{day.month:02}', f'{day.day:02}'
+    return y+m+d
+
+
 def is_trading():
     flag = False
     now = datetime.now()
