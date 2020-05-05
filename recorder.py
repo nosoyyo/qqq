@@ -9,6 +9,7 @@ import asyncio
 from datetime import datetime
 from feishu_bot import FeishuBot
 
+from utils import is_trading
 from snapper import Snapper, EndSnapper
 from config import Portfolio, FeishuConf
 
@@ -22,22 +23,8 @@ class Recorder():
     r = redis.Redis(connection_pool=cpool)
 
     def __init__(self):
+        self._is_trading = is_trading
         self.IS_TRADING = self._is_trading()
-
-    def _is_trading(self):
-        flag = False
-        now = datetime.now()
-        if now.weekday() > 5:
-            return flag
-        if now < datetime(2020, 11, 1):
-            self.OVER = datetime(now.year,now.month,now.day,4,0)
-            self.START = datetime(now.year,now.month,now.day,21,30)
-        else:
-            self.OVER = datetime(now.year,now.month,now.day,5,0)
-            self.START = datetime(now.year,now.month,now.day,22,30)
-        if not self.OVER < now < self.START:
-            flag = True
-        return flag
 
     async def record(self):
         flag = False

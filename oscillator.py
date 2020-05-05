@@ -3,9 +3,9 @@
 import time
 import asyncio
 
-from utils import lify
 from gateway import Gateway
 from feishu_bot import FeishuBot
+from utils import lify, is_trading
 from config import Portfolio, FeishuConf
 
 
@@ -160,9 +160,13 @@ class Oscillator():
 
 async def main():
     while True:
-        o = Oscillator(debug=True)
-        await o.do_job()
-        time.sleep(20)
+        IS_TRADING = is_trading()
+        if IS_TRADING:
+            o = Oscillator(debug=True)
+            await o.do_job()
+            time.sleep(20)
+        else:
+            time.sleep(63000)
 
 
 if __name__ == "__main__":

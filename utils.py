@@ -1,4 +1,21 @@
 import random
+from datetime import datetime
+
+
+def is_trading():
+    flag = False
+    now = datetime.now()
+    if now.weekday() > 5:
+        return flag
+    if now < datetime(2020, 11, 1):
+        OVER = datetime(now.year,now.month,now.day,4,0)
+        START = datetime(now.year,now.month,now.day,21,30)
+    else:
+        OVER = datetime(now.year,now.month,now.day,5,0)
+        START = datetime(now.year,now.month,now.day,22,30)
+    if not OVER < now < START:
+        flag = True
+    return flag
 
 
 def _get_nearest_ts(time_list: list,
