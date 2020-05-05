@@ -39,7 +39,7 @@ class BaseDictFormat():
         result.sort()
         return result
 
-    def get_nearest_ts(
+    def _get_nearest_ts(
                         self,
                         time_list: list,
                         ts_given: float,
