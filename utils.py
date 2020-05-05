@@ -1,6 +1,72 @@
 import random
 
 
+def _get_nearest_ts(time_list: list,
+                    ts_given: float,
+                    n_ele: int=1,
+                    ):
+        '''
+        for reading a particular dict format looks like
+        {timestamp : float}
+        e.g. {1588620813.466 : 3243562}
+
+
+        :param n_ele: num of elements you want to strip out
+        :return: float if not backward
+        :return: list if backward, with n of nearest elements
+        '''
+        time_list.sort()
+        result = []
+
+        try:
+            if not n_ele:
+                raise ZeroDivisionError('num of elements cannnot be zero!')
+            elif not isinstance(n_ele, int):
+                raise TypeError('num of elements must be `int`!')
+            elif -2 < n_ele < 1:
+                raise Exception('invalid n_ele')
+
+            if abs(n_ele) >= len(time_list):
+                result = time_list
+            elif ts_given > time_list[-1]:
+                result = time_list[-abs(n_ele):]
+            elif ts_given < time_list[0]:
+                result = time_list[:abs(n_ele)]
+            else:
+                d = 0
+                for t in time_list:
+                    if not d:
+                        d = ts_given - t
+                    if abs(ts_given - t) < d:
+                        d = ts_given - t
+                        result = t
+                        print(f'in loop: {result}')
+                        print(f'time_list.index(t): {time_list.index(t)}')
+                        break
+
+                print(n_ele)
+                if n_ele < 0:
+                    print(n_ele)
+                    end = time_list.index(t)
+                    print(end)
+                    begin = end + n_ele - 1
+                    print(begin)
+                    if begin <= 0:
+                        begin = 0
+                    result = time_list[begin:end]
+                    print(f'n_ele < 0: {begin} | {end} | {result}')
+                else:
+                    begin = time_list.index(t) - 1
+
+                    end = begin + n_ele
+                    result = time_list[begin:end]
+                    print(f'n_ele > 0: {begin} | {end} | {result}')
+                print(f'final: {result}')
+        except Exception as e:
+            print(e)
+        return result
+
+
 def small_talk(want):
     prefixes = ['', '那么，', '', '咳咳，', '', '嘿嘿，', '', '啊...', '', '嗯...',
                 '我看看，', '', '我看下啊...', '', '嚯！', '', '嗯哼，', '', '嗯呢，',

@@ -80,6 +80,7 @@ class Recorder():
                     _time = i[0]
                     _price = i[1]
                     _volume = i[2]
+                    # e.g. 'ZM_20200504_price
                     self.r.hset(f'{_set}_price', _time, _price)
                     self.r.hset(f'{_set}_volume', _time, _volume)
                     flag = True
