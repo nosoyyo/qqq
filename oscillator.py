@@ -6,10 +6,11 @@ import asyncio
 from gateway import Gateway
 from feishu_bot import FeishuBot
 from utils import lify, is_trading
+from datamodel import BaseDictFormat
 from config import Portfolio, FeishuConf
 
 
-class Oscillator():
+class Oscillator(BaseDictFormat):
 
     symbols = Portfolio.symbols
     if 'IXIC' in symbols:
@@ -22,62 +23,8 @@ class Oscillator():
 
     def __init__(self, debug=False):
         self.DEBUG = debug
-
-    def _read_ts_dict(self, _dict, ts, backward=None):
-        '''
-        for reading a particular dict format looks like
-        {timestamp : float}
-        e.g. {1588620813.466 : 3243562}
-
-        :param backward: if None, only read one value
-        :param backward: if like -5, read 5 elements backwards
-        '''
-        result = None
-        key_type_flag = float
-        try:
-            result = float(_dict[str(ts)])
-        except KeyError:
-            debug_info = f'no timestamp give, will look for nearest ts for'
-            if self.DEBUG:
-                print(f'{debug_info} {time.ctime()}')
-            time_list = self._serialize_time(_dict)
-            key = self._get_nearest_ts(time_list, time.time(), backward)
-            if isinstance(key, list):
-                pass
-            else:
-                result = float(_dict[str(key)])
-        return result
-
-    def _serialize_time(self, quotation: dict) -> list:
-        result = [float(i) for i in quotation]
-        result.sort()
-        return result
-
-    def _get_nearest_ts(self,
-                        time_list: list,
-                        ts_given: float,
-                        backward: int=1,
-                        ):
-        '''
-        :param backward: num of elements you want to strip out
-        :return: float if not backward
-        :return: list if backward, with n of nearest elements
-        '''
-        time_list.sort()
-        result = None
-        if ts_given > time_list[-1]:
-            result = time_list[-1]
-        elif ts_given < time_list[0]:
-            result = time_list[0]
-        else:
-            d = 0
-            for t in time_list:
-                if not d:
-                    d = ts_given - t
-                if abs(ts_given - t) < d:
-                    d = ts_given - t
-                    result = t
-        return result
+        self._is_trading = is_trading
+        self.IS_TRADING = self._is_trading()
 
     async def do_job(self):
         '''
@@ -160,9 +107,8 @@ class Oscillator():
 
 async def main():
     while True:
-        IS_TRADING = is_trading()
-        if IS_TRADING:
-            o = Oscillator(debug=True)
+        o = Oscillator(debug=True)
+        if o.IS_TRADING:
             await o.do_job()
             time.sleep(20)
         else:
