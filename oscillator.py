@@ -1,4 +1,5 @@
-# generating signals and send via bot
+# generating signals then send via bot
+# TODO: need to fix last_open
 
 import time
 import asyncio
@@ -100,6 +101,7 @@ class Oscillator(BaseTimePriceModel):
             raise Exception('error getting 60 mins avg price!')
 
         try:
+            # TODO need fix _get_last_open
             last_open = self._get_last_open(quotation)
             debug_info.append(f'last trade day open at: {last_open}')
         except Exception:
@@ -209,12 +211,17 @@ class Oscillator(BaseTimePriceModel):
 
 async def main():
     while True:
-        o = Oscillator(debug=True)
-        if o.IS_TRADING:
-            await o.do_job()
-            time.sleep(20)
-        else:
-            time.sleep(63000)
+        try:
+            o = Oscillator(debug=True)
+            if o.IS_TRADING:
+                await o.do_job()
+                time.sleep(20)
+            else:
+                time.sleep(63000)
+        except Exception:
+            warning = 'Oscillator() 异常退出了狸！'
+            await o.bot.send_text(warning, groups=FeishuConf.MSFC)
+            raise Exception('unknown exception!')
 
 
 if __name__ == "__main__":

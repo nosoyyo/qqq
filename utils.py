@@ -21,9 +21,13 @@ def get_day8(day=None) -> str:
     return y+m+d
 
 
-def is_trading():
+def is_trading(ts: datetime.timestamp=None):
     flag = False
-    now = datetime.now()
+    if ts:
+        now = datetime.fromtimestamp(ts)
+    else:
+        now = datetime.now()
+
     if now.weekday() > 5:
         return flag
     if now < datetime(2020, 11, 1):

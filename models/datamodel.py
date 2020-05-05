@@ -36,9 +36,9 @@ class BaseTimePriceModel(TradeDay):
         try:
             result = float(_dict[str(ts)])
         except KeyError:
-            debug_info = f'no timestamp give, will look for nearest ts for'
+            debug_info = f'no exact ts hit, will look for nearest ts for'
             if self.DEBUG:
-                print(f'{debug_info} {ts}')
+                print(f'{debug_info} {datetime.fromtimestamp(ts)}')
             time_list = self._serialize_time(_dict)
             key = self._get_nearest_ts(time_list, ts, n_ele=1)
             if isinstance(key, list):

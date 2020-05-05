@@ -2,6 +2,7 @@
 # this thing accepts data from Snapper, then store into Redis
 
 # TODO: need to fix still record on non trade day
+# TODO: need to fix not wake up on time when trade day starts
 
 import time
 import redis
@@ -9,12 +10,12 @@ import asyncio
 from datetime import datetime
 from feishu_bot import FeishuBot
 
-from utils import is_trading
+from models import TradeDay
 from snapper import Snapper, EndSnapper
 from config import Portfolio, FeishuConf
 
 
-class Recorder():
+class Recorder(TradeDay):
 
     # PRODUCTION redis db#15 = Market.US
     # LOCALHOST redis db#15 = [debug]Market.US
@@ -23,8 +24,7 @@ class Recorder():
     r = redis.Redis(connection_pool=cpool)
 
     def __init__(self):
-        self._is_trading = is_trading
-        self.IS_TRADING = self._is_trading()
+        self.is_trading()
 
     async def record(self):
         flag = False
@@ -72,7 +72,7 @@ class Recorder():
                     self.r.hset(f'{_set}_volume', _time, _volume)
                     flag = True
             except Exception:
-                raise Exception('failed when try save to redis in record_end_day()')
+                raise Exception('failed writing to redis in record_end_day()')
         return flag
 
 async def main():
@@ -81,7 +81,8 @@ async def main():
             recorder = Recorder()
             if recorder.IS_TRADING:
                 await recorder.record()
-                time.sleep(20)
+                # 5 requests/min
+                time.sleep(12)
             else:
                 now = datetime.now()
                 # do a final record
