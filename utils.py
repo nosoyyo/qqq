@@ -18,9 +18,10 @@ def is_trading():
     return flag
 
 
-def _get_nearest_ts(time_list: list,
+def get_nearest_ts(time_list: list,
                     ts_given: float,
                     n_ele: int=1,
+                    debug=False
                     ):
         '''
         for reading a particular dict format looks like
@@ -57,28 +58,23 @@ def _get_nearest_ts(time_list: list,
                     if abs(ts_given - t) < d:
                         d = ts_given - t
                         result = t
-                        print(f'in loop: {result}')
-                        print(f'time_list.index(t): {time_list.index(t)}')
-                        break
+                        if debug:
+                            print(f'result in loop: {result}')
 
-                print(n_ele)
                 if n_ele < 0:
-                    print(n_ele)
-                    end = time_list.index(t)
-                    print(end)
-                    begin = end + n_ele - 1
-                    print(begin)
+                    end = time_list.index(result) + 1
+                    begin = end + n_ele
                     if begin <= 0:
                         begin = 0
                     result = time_list[begin:end]
-                    print(f'n_ele < 0: {begin} | {end} | {result}')
+                    if debug:
+                        print(f'n_ele < 0: {begin} | {end} | {result}')
                 else:
-                    begin = time_list.index(t) - 1
-
+                    begin = time_list.index(result)
                     end = begin + n_ele
                     result = time_list[begin:end]
-                    print(f'n_ele > 0: {begin} | {end} | {result}')
-                print(f'final: {result}')
+                    if debug:
+                        print(f'n_ele > 0 time_list[{begin}:{end}]')
         except Exception as e:
             print(e)
         return result
