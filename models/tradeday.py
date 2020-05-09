@@ -1,3 +1,5 @@
+# TODO: on IS_TRADING change, send the signal
+
 import time
 from datetime import datetime
 

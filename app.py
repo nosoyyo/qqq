@@ -27,6 +27,7 @@ async def get_price(symbol):
     await redis.close()
     return result
 
+
 async def get_symbol_price(request, debug=True):
     '''
     approx. 12kb for one-day data
@@ -41,9 +42,11 @@ async def get_symbol_price(request, debug=True):
     j = await get_price(symbol)
     return JSONResponse(j)
 
+
 app = Starlette(debug=True, routes=[
     Route('/symbol/{symbol}/price', get_symbol_price),
 ])
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=9001)

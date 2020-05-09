@@ -19,7 +19,7 @@ class Recorder(TradeDay):
 
     # PRODUCTION redis db#15 = Market.US
     # LOCALHOST redis db#15 = [debug]Market.US
-    cpool = redis.ConnectionPool(host='localhost', port=6379,
+    cpool = redis.ConnectionPool(host='192.168.50.120', port=6379,
                                  decode_responses=True, db=15)
     r = redis.Redis(connection_pool=cpool)
 

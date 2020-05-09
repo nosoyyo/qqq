@@ -28,7 +28,7 @@ def is_trading(ts: datetime.timestamp=None):
     else:
         now = datetime.now()
 
-    if now.weekday() > 5:
+    if now.weekday() > 4:
         return flag
     if now < datetime(2020, 11, 1):
         OVER = datetime(now.year,now.month,now.day,4,0)
